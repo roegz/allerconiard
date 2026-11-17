@@ -17,10 +17,19 @@ npm start
 ```
 Ouvre **http://localhost:3000**
 
-### Commandes
+### 🗺 Carte de départ « Allerconia »
+Dès le lancement, la map est déjà construite et jouable :
+- **Bâtiment Aviation** au centre, avec une porte et un toit accessible par l'escalier
+- **Tour ouest + passerelle** pour dominer la rue
+- **Zone containers** (quête Explorateur)
+- **Garage RP** avec le Forgeron
+- **Zones de spawn** bleue (CT, nord) et orange (T, sud)
+- Caisses, couvertures, lampadaires et enseigne **ALLERCONIARD — par robotbot**
+
+### Commandes (clavier AZERTY)
 | Touche | Action |
 |--------|--------|
-| **Z Q S D** | Marcher |
+| **Z Q S D** | Marcher (codes physiques W A S D, adaptés à l'AZERTY) |
 | **Souris** | Regarder |
 | **Clic gauche** | Tirer |
 | **E** | Parler aux PNJ / interagir |

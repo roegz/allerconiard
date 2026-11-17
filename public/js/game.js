@@ -46,7 +46,10 @@ const Game = {
     document.getElementById('hud').classList.remove('hidden');
 
     const cam = World.camera;
-    cam.position.set(0, 1.7, 12);
+    cam.position.set(0, 1.7, 20);
+    cam.setTarget(new BABYLON.Vector3(0, 1.7, 0));
+    World.controls(true);
+    World.canvas.focus();
 
     Net.connect(this.name, this.skin,
       { x: cam.position.x, y: cam.position.y, z: cam.position.z },
@@ -76,6 +79,7 @@ const Game = {
         return;
       }
       if (!document.pointerLockElement) {
+        World.canvas.focus();
         this.lockPointer();
         return;
       }
@@ -96,6 +100,7 @@ const Game = {
         const inp = document.getElementById('chat-input');
         inp.classList.add('active');
         inp.focus();
+        World.controls(false);
         return;
       }
       if (e.code === 'KeyE' && this.started && !Editor.active) {
@@ -115,13 +120,18 @@ const Game = {
         const text = chat.value.trim();
         if (text) Net.send({ type: 'chat', text });
         chat.value = ''; chat.classList.remove('active'); chat.blur();
+        World.controls(true);
         this.lockPointer();
       }
-      if (e.key === 'Escape') { chat.classList.remove('active'); chat.blur(); }
+      if (e.key === 'Escape') {
+        chat.classList.remove('active'); chat.blur(); World.controls(true);
+      }
     });
 
-    document.getElementById('dialog-close').onclick = () =>
+    document.getElementById('dialog-close').onclick = () => {
       document.getElementById('dialog').classList.add('hidden');
+      World.controls(true);
+    };
   },
 
   chatOpen() {
@@ -186,17 +196,24 @@ const Game = {
         '« T’veux une vraie skin ?ramasse de l’XP. Chaque chose que tu fais ici compte, coniard. »';
       const b = document.createElement('button');
       b.textContent = 'Parler (50 XP)';
-      b.onclick = () => { this.gainXP(50); this.progress('talker'); dlg.classList.add('hidden'); };
+      b.onclick = () => {
+        this.gainXP(50); this.progress('talker');
+        dlg.classList.add('hidden'); World.controls(true);
+      };
       actions.appendChild(b);
     } else {
       document.getElementById('dialog-text').textContent =
         '« Patrouille du coin. Tire pas sur les potes, et aide-toi avec l’éditeur (Tab). »';
       const b = document.createElement('button');
       b.textContent = 'Saluer';
-      b.onclick = () => { this.addFeed('Vous saluez la patrouille.'); dlg.classList.add('hidden'); };
+      b.onclick = () => {
+        this.addFeed('Vous saluez la patrouille.');
+        dlg.classList.add('hidden'); World.controls(true);
+      };
       actions.appendChild(b);
     }
     dlg.classList.remove('hidden');
+    World.controls(false);
     if (document.pointerLockElement) document.exitPointerLock();
   },
 

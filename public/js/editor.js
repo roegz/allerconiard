@@ -51,6 +51,8 @@ const Editor = {
     this.active = force === undefined ? !this.active : force;
     document.getElementById('editor').classList.toggle('hidden', !this.active);
     document.getElementById('hud').classList.toggle('hidden', this.active);
+    // On rend la main au joueur quand on quitte l'éditeur
+    World.controls(!this.active && Game.started && !Game.chatOpen());
     // Pointer lock quitté quand on édite
     if (this.active && document.pointerLockElement) document.exitPointerLock();
   },
