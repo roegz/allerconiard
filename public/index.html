@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Allerconiard — par robotbot</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <script src="https://cdn.babylonjs.com/babylon.js"></script>
+  <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+</head>
+<body>
+  <canvas id="game" touch-action="none"></canvas>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div id="crosshair"><span></span><span></span><span></span><span></span></div>
+    <div id="topbar">
+      <span id="server-status">● Connexion…</span>
+      <span id="player-count">0 joueur(s)</span>
+      <span id="fps">0 FPS</span>
+    </div>
+    <div id="hud-left">
+      <div id="hp-bar"><div id="hp-fill"></div><span id="hp-text">100</span></div>
+      <div id="weapon-name">AllerCONIPISTOLET</div>
+    </div>
+    <div id="ammo">12 <small>/ 12</small></div>
+    <div id="quest-tracker"></div>
+    <div id="chat">
+      <div id="chat-log"></div>
+      <input id="chat-input" maxlength="200" placeholder="T (chat)…" autocomplete="off" />
+    </div>
+    <div id="killfeed"></div>
+    <div id="hint">ZQSD bouger · Souris viser · Clic tirer · E interagir · T chat · Tab éditeur</div>
+  </div>
+
+  <!-- Écran de connexion -->
+  <div id="menu" class="overlay">
+    <div class="panel">
+      <h1>ALLERCONIARD</h1>
+      <p class="sub">FPS RP modifiable — créé par <b>robotbot</b></p>
+      <label>Pseudo</label>
+      <input id="name-input" maxlength="20" placeholder="Coniard" />
+      <label>Skin</label>
+      <div id="skin-picker" class="skins"></div>
+      <button id="play-btn" class="primary">JOUER</button>
+      <p class="legend">
+        <b>ZQSD</b> marcher · <b>Souris</b> regarder · <b>Clic</b> tirer · <b>E</b> interagir ·
+        <b>Tab</b> éditeur de map · <b>T</b> chat
+      </p>
+    </div>
+  </div>
+
+  <!-- Éditeur de map -->
+  <div id="editor" class="overlay hidden">
+    <div class="panel editor-panel">
+      <h2>🛠 ÉDITEUR DE MAP</h2>
+      <p class="sub">Clique sur le sol pour poser un objet. Partage avec tout le serveur.</p>
+      <div id="palette" class="palette"></div>
+      <div class="row">
+        <label>Couleur</label><input type="color" id="brush-color" value="#b5651d" />
+        <label>Taille</label><input type="range" id="brush-size" min="1" max="6" value="2" />
+      </div>
+      <div class="row">
+        <button id="editor-done" class="primary">Terminer (Tab)</button>
+        <button id="editor-clear">Tout effacer</button>
+        <button id="editor-share">Partager au serveur</button>
+      </div>
+      <button id="editor-export">Exporter JSON</button>
+      <textarea id="editor-json" placeholder="Importe un JSON ici puis clique Appliquer"></textarea>
+      <button id="editor-import">Appliquer le JSON</button>
+    </div>
+  </div>
+
+  <!-- Quêtes / PNJ -->
+  <div id="dialog" class="overlay hidden">
+    <div class="panel">
+      <h2 id="dialog-title">PNJ</h2>
+      <p id="dialog-text"></p>
+      <div id="dialog-actions"></div>
+      <button id="dialog-close">Fermer</button>
+    </div>
+  </div>
+
+  <script src="/js/net.js"></script>
+  <script src="/js/world.js"></script>
+  <script src="/js/editor.js"></script>
+  <script src="/js/game.js"></script>
+</body>
+</html>
