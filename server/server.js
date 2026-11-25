@@ -1,7 +1,7 @@
 /**
  * Allerconiard - serveur léger
  * - sert le client (HTML/JS/CSS)
- * - relaye les joueurs via WebSocket (positions, tirs, chat, map)
+ * - relaye les joueurs via WebSocket (positions, tirs, chat, map, sauts)
  * Aucune persistance lourde : tout reste en mémoire, redémarrage = reset.
  */
 const http = require('http');
@@ -16,11 +16,13 @@ const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: '/ws' });
 
 app.use(express.static(path.join(__dirname, '..', 'public'), { index: 'index.html' }));
-app.get('/health', (_req, res) => res.json({ ok: true, players: players.size }));
+app.get('/health', (_req, res) => res.json({ ok: true, players: players.size, map: currentMap }));
 
 /* ---------- État en mémoire ---------- */
 const players = new Map(); // id -> { id, name, skin, pos, rot, hp, ping, lastSeen }
-let worldState = null; // dernière map partagée (posée par l'éditeur)
+let worldState = null; // dernière map perso partagée (posée par l'éditeur)
+let currentMap = 'allerconia'; // map jouée par tout le serveur
+const OFFICIAL_MAPS = ['allerconia', 'dock'];
 let nextId = 1;
 
 function broadcast(payload, exceptId = null) {
@@ -44,6 +46,7 @@ wss.on('connection', (ws) => {
     id,
     players: Array.from(players.values()),
     world: worldState,
+    map: currentMap,
     count: players.size
   }));
 
@@ -58,6 +61,7 @@ wss.on('connection', (ws) => {
       case 'join': {
         player.name = String(msg.name || 'Coniard').slice(0, 20);
         player.skin = String(msg.skin || 'default').slice(0, 40);
+        player.weaponSkin = String(msg.weaponSkin || 'standard').slice(0, 40);
         player.pos = msg.pos || { x: 0, y: 2, z: 6 };
         player.rot = msg.rot || 0;
         player.hp = 100;
@@ -80,6 +84,10 @@ wss.on('connection', (ws) => {
         broadcast({ type: 'fx:shoot', id, from: msg.from, dir: msg.dir, weapon: msg.weapon }, id);
         break;
       }
+      case 'grenade': {
+        broadcast({ type: 'fx:grenade', id, from: msg.from, dir: msg.dir }, id);
+        break;
+      }
       case 'hit': {
         const target = players.get(msg.target);
         if (target) {
@@ -100,6 +108,24 @@ wss.on('connection', (ws) => {
       case 'skin': {
         player.skin = String(msg.skin || 'default').slice(0, 40);
         broadcast({ type: 'player:skin', id, skin: player.skin });
+        break;
+      }
+      case 'weapon': {
+        player.weapon = String(msg.weapon || 'pistol').slice(0, 20);
+        broadcast({ type: 'player:weapon', id, weapon: player.weapon }, id);
+        break;
+      }
+      case 'weaponSkin': {
+        player.weaponSkin = String(msg.skin || 'standard').slice(0, 40);
+        broadcast({ type: 'player:weaponSkin', id, skin: player.weaponSkin }, id);
+        break;
+      }
+      case 'map:set': {
+        const wanted = String(msg.map || '');
+        if (OFFICIAL_MAPS.includes(wanted) || wanted === 'custom') {
+          currentMap = wanted;
+          broadcast({ type: 'map:update', map: currentMap }, id);
+        }
         break;
       }
       case 'world:save': {

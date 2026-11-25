@@ -8,7 +8,12 @@ const Net = {
   onChat: null,
   onHit: null,
   onShoot: null,
+  onGrenade: null,
+  onDead: null,
   onRoster: null,
+  onMap: null,
+  onWeapon: null,
+  onWeaponSkin: null,
 
   connect(name, skin, pos, rot) {
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -41,6 +46,7 @@ const Net = {
         this.id = m.id;
         m.players.forEach(p => this.players.set(p.id, p));
         if (m.world && this.onWorld) this.onWorld(m.world);
+        if (m.map && this.onMap) this.onMap(m.map);
         break;
       case 'roster':
         this.players.clear();
@@ -63,17 +69,38 @@ const Net = {
         if (p) p.skin = m.skin;
         break;
       }
+      case 'player:weapon': {
+        const p = this.players.get(m.id);
+        if (p) p.weapon = m.weapon;
+        if (this.onWeapon) this.onWeapon(m);
+        break;
+      }
+      case 'player:weaponSkin': {
+        const p = this.players.get(m.id);
+        if (p) p.weaponSkin = m.skin;
+        if (this.onWeaponSkin) this.onWeaponSkin(m);
+        break;
+      }
       case 'player:hit':
         if (this.onHit) this.onHit(m);
         break;
+      case 'player:dead':
+        if (this.onDead) this.onDead(m);
+        break;
       case 'fx:shoot':
         if (this.onShoot) this.onShoot(m);
+        break;
+      case 'fx:grenade':
+        if (this.onGrenade) this.onGrenade(m);
         break;
       case 'chat':
         if (this.onChat) this.onChat(m);
         break;
       case 'world:update':
         if (this.onWorld) this.onWorld(m.world);
+        break;
+      case 'map:update':
+        if (this.onMap) this.onMap(m.map);
         break;
     }
   },

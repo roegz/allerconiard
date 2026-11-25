@@ -7,6 +7,7 @@ const Editor = {
   color: '#b5651d',
   size: 2,
   onPlaceCount: null,
+  customData: null,
 
   BRUSHES: {
     mur:    { w: 3, h: 3, d: 0.6, label: '🧱 Mur' },
@@ -40,14 +41,19 @@ const Editor = {
     document.getElementById('editor-export').onclick = () => this.exportJSON();
     document.getElementById('editor-import').onclick = () => this.importJSON();
 
-    // Restaure la map locale
+    // On garde la map perso de côté : elle sera posée quand on choisira "Map perso".
     try {
       const local = localStorage.getItem('allerconiard_map');
-      if (local) this.load(JSON.parse(local));
+      if (local) this.customData = JSON.parse(local);
     } catch {}
   },
 
   toggle(force) {
+    // Les deux maps officielles restent intactes pour tout le monde.
+    if (!this.active && World.currentMap !== 'custom') {
+      Game.note('Maps officielles : pas d’édition ici. M → Map perso → Tab.', 'warn');
+      return;
+    }
     this.active = force === undefined ? !this.active : force;
     document.getElementById('editor').classList.toggle('hidden', !this.active);
     document.getElementById('hud').classList.toggle('hidden', this.active);

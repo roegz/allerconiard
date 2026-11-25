@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Allerconiard — par robotbot</title>
+  <title>Allerconiard — tactical sandbox</title>
   <link rel="stylesheet" href="/css/style.css" />
   <script src="https://cdn.babylonjs.com/babylon.js"></script>
   <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
@@ -11,77 +11,188 @@
 <body>
   <canvas id="game" tabindex="0" touch-action="none"></canvas>
 
-  <!-- HUD -->
+  <!-- Interface de jeu -->
   <div id="hud" class="hidden">
+    <div id="vignette"></div>
+    <div id="damage-flash"></div>
     <div id="crosshair"><span></span><span></span><span></span><span></span></div>
+
     <div id="topbar">
-      <span id="server-status">● Connexion…</span>
-      <span id="player-count">0 joueur(s)</span>
-      <span id="fps">0 FPS</span>
+      <span class="topbar-brand">AC / <b>LIVE</b></span>
+      <span id="server-status">● connexion…</span>
+      <span id="player-count">1 joueur</span>
+      <span id="current-map">Allerconia</span>
+      <span id="fps">0 fps</span>
     </div>
+
     <div id="hud-left">
+      <div class="hud-caption">ÉTAT OPÉRATIONNEL</div>
       <div id="hp-bar"><div id="hp-fill"></div><span id="hp-text">100</span></div>
-      <div id="weapon-name">AllerCONIPISTOLET</div>
+      <div class="hud-line"></div>
+      <div id="weapon-name">Allerconipistolet</div>
+      <div id="weapon-skin-name">De série</div>
+      <div id="sprint">SPRINT</div>
+      <div id="slide">SLIDE</div>
     </div>
-    <div id="ammo">12 <small>/ 12</small></div>
+
+    <div id="ammo-wrap">
+      <div id="grenade-wrap">
+        <div class="hud-caption">GRENADES <kbd>Q</kbd></div>
+        <div id="grenades">3 <small>/ 3</small></div>
+      </div>
+      <div class="hud-caption">MUNITIONS</div>
+      <div id="ammo">12 <small>/ 12</small></div>
+    </div>
+
     <div id="quest-tracker"></div>
+    <div id="killfeed"></div>
+
     <div id="chat">
       <div id="chat-log"></div>
-      <input id="chat-input" maxlength="200" placeholder="T (chat)…" autocomplete="off" />
+      <input id="chat-input" maxlength="200" placeholder="T pour parler…" autocomplete="off" />
     </div>
-    <div id="killfeed"></div>
-    <div id="hint">ZQSD bouger · Souris viser · Clic tirer · E interagir · T chat · Tab éditeur</div>
+
+    <div id="hint">ZQSD bouger · clic tirer · espace saut/double saut · shift sprint · C glissade · Q grenade · 1-4 arme · F trick · G show · B finition · R recharger · E parler · M map · T chat · Tab éditeur</div>
   </div>
 
-  <!-- Écran de connexion -->
+  <!-- Accueil -->
   <div id="menu" class="overlay">
-    <div class="panel">
-      <h1>ALLERCONIARD</h1>
-      <p class="sub">FPS RP modifiable — créé par <b>robotbot</b></p>
-      <label>Pseudo</label>
-      <input id="name-input" maxlength="20" placeholder="Coniard" />
-      <label>Skin</label>
-      <div id="skin-picker" class="skins"></div>
-      <button id="play-btn" class="primary">JOUER</button>
-      <p class="legend">
-        <b>ZQSD</b> marcher · <b>Souris</b> regarder · <b>Clic</b> tirer · <b>E</b> interagir ·
-        <b>Tab</b> éditeur de map · <b>T</b> chat
-      </p>
+    <div class="menu-shell">
+
+      <header class="menu-header">
+        <div class="brand">
+          <div class="brand-mark"><i></i><i></i><i></i><i></i></div>
+          <div>
+            <div class="brand-name">ALLERCONIARD</div>
+            <div class="brand-sub">TACTICAL SANDBOX <span>//</span> V0.5</div>
+          </div>
+        </div>
+        <div class="header-meta">
+          <span class="dot-live"></span> SESSION LOCALE
+          <span class="meta-sep">|</span> PAR ROBOTBOT
+        </div>
+      </header>
+
+      <div class="menu-body">
+        <main class="menu-main">
+          <div class="section-index">01 — BRIEFING</div>
+          <p class="lede">
+            Pas de compte, pas d'attente. Un pseudo, une map, et tu es dans la partie.
+            Tire, construis, discute avec les PNJ — le serveur est à toi.
+          </p>
+
+          <div class="field">
+            <label for="name-input">Indicatif</label>
+            <input id="name-input" maxlength="20" placeholder="Coniard" autocomplete="off" />
+          </div>
+
+          <div class="field">
+            <div class="field-head"><label>Tenue</label><span>CLICK POUR ÉQUIPER</span></div>
+            <div id="skin-picker" class="skins"></div>
+          </div>
+
+          <div class="field">
+            <div class="field-head"><label>Finition d'arme</label><span>B EN JEU</span></div>
+            <div id="weapon-skin-picker" class="skins weapon-skins"></div>
+          </div>
+
+          <div class="field">
+            <label>Zone de déploiement</label>
+            <div id="map-picker" class="maps"></div>
+          </div>
+
+          <button id="play-btn" class="btn-primary">DÉPLOYER <span>→</span></button>
+        </main>
+
+        <aside class="menu-side">
+          <div class="section-index">02 — MANUEL</div>
+          <div class="briefing-card">
+            <div class="briefing-title">CONTRÔLES</div>
+            <div class="keyrow"><kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd><span>Se déplacer</span></div>
+            <div class="keyrow"><kbd>SOURIS</kbd><span>Viser</span></div>
+            <div class="keyrow"><kbd>CLIC</kbd><span>Tirer / frapper</span></div>
+            <div class="keyrow"><kbd>ESPACE</kbd><span>Sauter / double saut</span></div>
+            <div class="keyrow"><kbd>SHIFT</kbd><span>Sprint</span></div>
+            <div class="keyrow"><kbd>C</kbd><span>Glissade</span></div>
+            <div class="keyrow"><kbd>Q</kbd><span>Grenade</span></div>
+            <div class="keyrow"><kbd>1-4</kbd><span>Changer d'arme</span></div>
+            <div class="keyrow"><kbd>F</kbd><span>Trick d'arme</span></div>
+            <div class="keyrow"><kbd>G</kbd><span>Grand show (~2 s)</span></div>
+            <div class="keyrow"><kbd>B</kbd><span>Finition</span></div>
+            <div class="keyrow"><kbd>R</kbd><span>Recharger</span></div>
+            <div class="keyrow"><kbd>E</kbd><kbd>M</kbd><kbd>T</kbd><span>Parler / map / chat</span></div>
+            <div class="keyrow"><kbd>TAB</kbd><span>Éditeur</span></div>
+          </div>
+          <div class="briefing-card quiet">
+            <div class="briefing-title">NOTE DU TERRAIN</div>
+            <p>Deux maps officielles, identiques pour tout le monde. La map perso est à toi :
+              construis avec <b>Tab</b>, puis partage au serveur.</p>
+          </div>
+        </aside>
+      </div>
+
+      <footer class="menu-footer">
+        <span>FAIT À LA MAIN PAR ROBOTBOT</span>
+        <span class="footer-line"></span>
+        <span>BABYLON.JS · WEBSOCKET · PROCÉDURAL</span>
+      </footer>
     </div>
   </div>
 
-  <!-- Éditeur de map -->
+  <!-- Changer de map en jeu -->
+  <div id="map-menu" class="overlay hidden">
+    <div class="panel">
+      <div class="section-index">CHANGEMENT DE ZONE</div>
+      <h2>Où on va ?</h2>
+      <p class="sub">La map change pour tout le monde sur le serveur.</p>
+      <button class="map-choice" onclick="Game.setMap('allerconia')">
+        <b>Allerconia</b><span>La ville. Le bâtiment, le garage, les containers. Le classique.</span>
+      </button>
+      <button class="map-choice" onclick="Game.setMap('dock')">
+        <b>Le Quai</b><span>Grues, tôle et eau pas très propre. Deux étages de jeu.</span>
+      </button>
+      <button class="map-choice" onclick="Game.setMap('custom')">
+        <b>Map perso</b><span>Un sol vide. Tab pour construire, puis partage au serveur.</span>
+      </button>
+      <button id="map-menu-close" class="btn-ghost">Rester ici</button>
+    </div>
+  </div>
+
+  <!-- Éditeur -->
   <div id="editor" class="overlay hidden">
     <div class="panel editor-panel">
-      <h2>🛠 ÉDITEUR DE MAP</h2>
-      <p class="sub">Clique sur le sol pour poser un objet. Partage avec tout le serveur.</p>
+      <div class="section-index">ATELIER / CONSTRUCTION</div>
+      <h2>Éditeur</h2>
+      <p class="sub">Clique par terre pour poser. Partage pour que les autres le voient.</p>
       <div id="palette" class="palette"></div>
       <div class="row">
         <label>Couleur</label><input type="color" id="brush-color" value="#b5651d" />
         <label>Taille</label><input type="range" id="brush-size" min="1" max="6" value="2" />
       </div>
       <div class="row">
-        <button id="editor-done" class="primary">Terminer (Tab)</button>
-        <button id="editor-clear">Tout effacer</button>
-        <button id="editor-share">Partager au serveur</button>
+        <button id="editor-done" class="btn-primary small">Terminer <kbd>TAB</kbd></button>
+        <button id="editor-clear" class="btn-ghost">Tout effacer</button>
+        <button id="editor-share" class="btn-ghost">Partager</button>
       </div>
-      <button id="editor-export">Exporter JSON</button>
-      <textarea id="editor-json" placeholder="Importe un JSON ici puis clique Appliquer"></textarea>
-      <button id="editor-import">Appliquer le JSON</button>
+      <button id="editor-export" class="btn-ghost">Exporter le JSON</button>
+      <textarea id="editor-json" placeholder="Colle un JSON ici, puis applique"></textarea>
+      <button id="editor-import" class="btn-ghost">Appliquer le JSON</button>
     </div>
   </div>
 
-  <!-- Quêtes / PNJ -->
+  <!-- Dialogue PNJ -->
   <div id="dialog" class="overlay hidden">
-    <div class="panel">
-      <h2 id="dialog-title">PNJ</h2>
-      <p id="dialog-text"></p>
+    <div class="panel dialog-panel">
+      <div class="section-index">COMMUNICATION / PNJ</div>
+      <h2 id="dialog-title">Quelqu'un</h2>
+      <p id="dialog-text" class="npc-text"></p>
       <div id="dialog-actions"></div>
-      <button id="dialog-close">Fermer</button>
+      <button id="dialog-close" class="btn-ghost">Laisser tomber</button>
     </div>
   </div>
 
   <script src="/js/net.js"></script>
+  <script src="/js/models.js"></script>
   <script src="/js/world.js"></script>
   <script src="/js/editor.js"></script>
   <script src="/js/game.js"></script>
